@@ -1,0 +1,6 @@
+{
+    "files.exclude": {
+        "**/.irb_history": true,
+        ".vscode": true
+    }
+}
