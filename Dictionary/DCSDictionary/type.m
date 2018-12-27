@@ -1,7 +1,8 @@
 #include "type.h"
 
 #ifdef CFTYPE_MAP_DCS_DICTIONARY
-CFTypeID DCSDictionaryGetTypeID();
+typedef const void *DCSDictionaryRef;
+CFTypeID DCSDictionaryGetTypeID(void);
 VALUE dic_from_ref(DCSDictionaryRef ref);
 #endif
 

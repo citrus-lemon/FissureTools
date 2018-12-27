@@ -1,4 +1,3 @@
-#define CFTYPE_MAP_DCS_DICTIONARY
 #include "lost_define.h"
 #include "type.h"
 #import <Foundation/Foundation.h>
@@ -157,8 +156,21 @@ VALUE dic_preference_html(VALUE self) {
 VALUE dic_sub_dictionaries(VALUE self) {
   DCSDictionaryRef *dicp;
   TypedData_Get_Struct(self, DCSDictionaryRef, &dic_type, dicp);
-  CFTypeRef v = DCSDictionaryGetSubDictionaries(*dicp);
+  CFArrayRef v = DCSDictionaryGetSubDictionaries(*dicp);
+#ifndef CFTYPE_MAP_DCS_DICTIONARY
+  VALUE rbarr = rb_ary_new();
+  if (!v)
+    return rbarr;
+  CFIndex c = CFArrayGetCount(v);
+  CFTypeRef list[c];
+  CFArrayGetValues(v, CFRangeMake(0, c), list);
+  for (CFIndex i = 0; i < c; i++) {
+    rb_ary_push(rbarr, dic_from_ref(list[i]));
+  }
+  return rbarr;
+#else
   return cftype2rb(v);
+#endif
 }
 
 VALUE dic_text_definition(VALUE self, VALUE text) {
@@ -168,6 +180,10 @@ VALUE dic_text_definition(VALUE self, VALUE text) {
   CFStringRef definition = DCSCopyTextDefinition(
       *dicp, (__bridge CFStringRef)word, CFRangeMake(0, word.length));
   return cfstr2rb(definition);
+}
+
+VALUE dic_inspect(VALUE self) {
+  return rb_funcall(self, rb_intern("short_name"), 0);
 }
 
 void Init_binding() {
@@ -189,6 +205,8 @@ void Init_binding() {
   rb_define_method(c_dic, "preference_html", dic_preference_html, 0);
   rb_define_method(c_dic, "sub_dictionaries", dic_sub_dictionaries, 0);
   rb_define_method(c_dic, "text_definition", dic_text_definition, 1);
+  rb_define_method(c_dic, "inspect", dic_inspect, 0);
+
   rb_define_module_function(m_dcs, "getActiveDictionaries",
                             r_getActiveDictionaries, 0);
   rb_define_module_function(m_dcs, "copyAvailableDictionaries",
