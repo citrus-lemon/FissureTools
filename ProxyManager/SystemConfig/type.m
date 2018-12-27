@@ -50,7 +50,9 @@ VALUE nsdic2rb(NSDictionary *dict) {
 
 VALUE nsid2rb(id value) {
   // only support NSDictionary, NSArray, NSString, NSNumber
-  if ([value isKindOfClass:[NSString class]]) {
+  if (value == nil) {
+    return Qnil;
+  } else if ([value isKindOfClass:[NSString class]]) {
     return nsstr2rb(value);
   } else if ([value isKindOfClass:[NSDictionary class]]) {
     return nsdic2rb(value);
