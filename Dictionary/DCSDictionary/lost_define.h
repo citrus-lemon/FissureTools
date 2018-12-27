@@ -5,19 +5,20 @@
 
 CFSetRef DCSGetActiveDictionaries(void);
 CFSetRef DCSCopyAvailableDictionaries(void);
-CFTypeRef DCSDictionaryGetAssetObj(DCSDictionaryRef dictID);
-CFURLRef DCSDictionaryGetBaseURL(DCSDictionaryRef dictID);
-CFStringRef DCSDictionaryGetIdentifier(DCSDictionaryRef dictID);
-CFTypeRef DCSDictionaryGetLanguages(DCSDictionaryRef dictID);
-CFStringRef DCSDictionaryGetName(DCSDictionaryRef dictID);
-CFTypeRef DCSDictionaryGetParentDictionary(DCSDictionaryRef dictID);
-CFTypeRef DCSDictionaryGetPreference(DCSDictionaryRef dictID);
-CFTypeRef DCSDictionaryGetPreferenceHTML(DCSDictionaryRef dictID);
-CFStringRef DCSDictionaryGetPrimaryLanguage(DCSDictionaryRef dictID);
-CFStringRef DCSDictionaryGetShortName(DCSDictionaryRef dictID);
-CFURLRef DCSDictionaryGetStyleSheetURL(DCSDictionaryRef dictID);
-CFTypeRef DCSDictionaryGetSubDictionaries(DCSDictionaryRef dictID);
+CFTypeRef DCSDictionaryGetAssetObj(DCSDictionaryRef);
+CFURLRef DCSDictionaryGetBaseURL(DCSDictionaryRef);
+CFStringRef DCSDictionaryGetIdentifier(DCSDictionaryRef);
+CFTypeRef DCSDictionaryGetLanguages(DCSDictionaryRef);
+CFStringRef DCSDictionaryGetName(DCSDictionaryRef);
+CFTypeRef DCSDictionaryGetParentDictionary(DCSDictionaryRef);
+CFTypeRef DCSDictionaryGetPreference(DCSDictionaryRef);
+CFTypeRef DCSDictionaryGetPreferenceHTML(DCSDictionaryRef);
+CFStringRef DCSDictionaryGetPrimaryLanguage(DCSDictionaryRef);
+CFStringRef DCSDictionaryGetShortName(DCSDictionaryRef);
+CFURLRef DCSDictionaryGetStyleSheetURL(DCSDictionaryRef);
+CFTypeRef DCSDictionaryGetSubDictionaries(DCSDictionaryRef);
 CFTypeID DCSDictionaryGetTypeID(void);
-CFURLRef DCSDictionaryGetURL(DCSDictionaryRef dictID);
+CFURLRef DCSDictionaryGetURL(DCSDictionaryRef);
+CFArrayRef DCSCopyDefinitions(DCSDictionaryRef, CFStringRef, CFRange);
 
 #endif /* fissure_dictionary_lost_define_h */
