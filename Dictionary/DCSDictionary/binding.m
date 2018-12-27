@@ -196,7 +196,19 @@ VALUE dic_definitions(VALUE self, VALUE text) {
 }
 
 VALUE dic_inspect(VALUE self) {
-  return rb_funcall(self, rb_intern("short_name"), 0);
+  VALUE sn = rb_funcall(self, rb_intern("short_name"), 0);
+  if (sn == Qnil) {
+    sn = rb_funcall(self, rb_intern("identifier"), 0);
+    if (sn == Qnil)
+      return rb_str_new_cstr("#<DCSDictionary>");
+    sn = rb_funcall(sn, rb_intern("sub"), 2,
+                    rb_str_new_cstr("com.apple.dictionary."),
+                    rb_str_new_cstr(""));
+    return rb_str_cat2(rb_str_concat(rb_str_new_cstr("#<DCSDictionary("), sn),
+                       ")>");
+  }
+  return rb_str_cat2(rb_str_concat(rb_str_new_cstr("#<DCSDictionary["), sn),
+                     "]>");
 }
 
 void Init_binding() {
