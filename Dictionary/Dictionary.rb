@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby -w
-module Dictionary
+require_relative 'DCSDictionary/binding'
+module DictionaryServices
 
 end
