@@ -211,6 +211,16 @@ VALUE dic_inspect(VALUE self) {
                      "]>");
 }
 
+VALUE dic_equal(VALUE this, VALUE that) {
+  if (!rb_obj_is_instance_of(that, rb_class_of(this))) {
+    return Qfalse;
+  }
+  DCSDictionaryRef *dicp, *dicp2;
+  TypedData_Get_Struct(this, DCSDictionaryRef, &dic_type, dicp);
+  TypedData_Get_Struct(that, DCSDictionaryRef, &dic_type, dicp2);
+  return (*dicp == *dicp2) ? Qtrue : Qfalse;
+}
+
 void Init_binding() {
   m_dcs = rb_define_module("DictionaryServices");
   c_dic = rb_define_class_under(m_dcs, "DCSDictionary", rb_cData);
@@ -232,6 +242,7 @@ void Init_binding() {
   rb_define_method(c_dic, "text_definition", dic_text_definition, 1);
   rb_define_method(c_dic, "definitions", dic_definitions, 1);
   rb_define_method(c_dic, "inspect", dic_inspect, 0);
+  rb_define_method(c_dic, "==", dic_equal, 1);
 
   rb_define_module_function(m_dcs, "getActiveDictionaries",
                             r_getActiveDictionaries, 0);
