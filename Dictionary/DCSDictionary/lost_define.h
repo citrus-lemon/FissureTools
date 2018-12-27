@@ -17,7 +17,7 @@ CFStringRef DCSDictionaryGetPrimaryLanguage(DCSDictionaryRef dictID);
 CFStringRef DCSDictionaryGetShortName(DCSDictionaryRef dictID);
 CFURLRef DCSDictionaryGetStyleSheetURL(DCSDictionaryRef dictID);
 CFTypeRef DCSDictionaryGetSubDictionaries(DCSDictionaryRef dictID);
-CFTypeID DCSDictionaryGetTypeID(DCSDictionaryRef dictID);
+CFTypeID DCSDictionaryGetTypeID();
 CFURLRef DCSDictionaryGetURL(DCSDictionaryRef dictID);
 
 #endif /* fissure_dictionary_lost_define_h */

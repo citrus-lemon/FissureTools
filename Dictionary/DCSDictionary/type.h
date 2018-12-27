@@ -1,8 +1,8 @@
 #include <CoreFoundation/CoreFoundation.h>
 #include <ruby/ruby.h>
 
-#ifndef type_h
-#define type_h
+#ifndef fissure_dictionary_type_h
+#define fissure_dictionary_type_h
 
 VALUE cftype2rb(CFTypeRef obj);
 VALUE cfstr2rb(CFStringRef acfstr);

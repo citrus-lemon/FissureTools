@@ -1,9 +1,14 @@
+#define CFTYPE_MAP_DCS_DICTIONARY
 #include "lost_define.h"
 #include "type.h"
 #import <Foundation/Foundation.h>
 #import <ruby/ruby.h>
 
+VALUE m_dcs, c_dic;
+
 #pragma mark ruby binding
+
+void dic_free(void *data) { free(data); }
 
 size_t dic_size(const void *data) { return sizeof(DCSDictionaryRef); }
 
@@ -12,12 +17,20 @@ static const rb_data_type_t dic_type = {
     .function =
         {
             .dmark = NULL,
-            .dfree = NULL,
+            .dfree = dic_free,
             .dsize = dic_size,
         },
     .data = NULL,
     .flags = RUBY_TYPED_FREE_IMMEDIATELY,
 };
+
+VALUE dic_from_ref(DCSDictionaryRef ref) {
+  VALUE dic = rb_class_new_instance(0, NULL, c_dic);
+  DCSDictionaryRef *dicp;
+  TypedData_Get_Struct(dic, DCSDictionaryRef, &dic_type, dicp);
+  *dicp = ref;
+  return dic;
+}
 
 VALUE dic_alloc(VALUE self) {
   DCSDictionaryRef *data = malloc(sizeof(DCSDictionaryRef));
@@ -29,17 +42,24 @@ VALUE dic_init(VALUE self) { return self; }
 
 VALUE r_getActiveDictionaries(VALUE self) {
   CFSetRef dics = DCSGetActiveDictionaries();
-  VALUE c_dic = rb_const_get(self, rb_intern("DCSDictionary"));
   CFIndex c = CFSetGetCount(dics);
   DCSDictionaryRef dicrefs[c];
   CFSetGetValues(dics, (const void **)dicrefs);
   VALUE rbarr = rb_ary_new();
   for (CFIndex i = 0; i < c; i++) {
-    VALUE dic = rb_class_new_instance(0, NULL, c_dic);
-    rb_ary_push(rbarr, dic);
-    DCSDictionaryRef *dicp;
-    TypedData_Get_Struct(dic, DCSDictionaryRef, &dic_type, dicp);
-    *dicp = dicrefs[i];
+    rb_ary_push(rbarr, dic_from_ref(dicrefs[i]));
+  }
+  return rbarr;
+}
+
+VALUE r_copyAvailableDictionaries(VALUE self) {
+  CFSetRef dics = DCSCopyAvailableDictionaries();
+  CFIndex c = CFSetGetCount(dics);
+  DCSDictionaryRef dicrefs[c];
+  CFSetGetValues(dics, (const void **)dicrefs);
+  VALUE rbarr = rb_ary_new();
+  for (CFIndex i = 0; i < c; i++) {
+    rb_ary_push(rbarr, dic_from_ref(dicrefs[i]));
   }
   return rbarr;
 }
@@ -75,64 +95,70 @@ VALUE dic_primary_language(VALUE self) {
 VALUE dic_url(VALUE self) {
   DCSDictionaryRef *dicp;
   TypedData_Get_Struct(self, DCSDictionaryRef, &dic_type, dicp);
-  CFURLRef pl = DCSDictionaryGetURL(*dicp);
-  return cfstr2rb(CFURLGetString(pl));
+  CFURLRef url = DCSDictionaryGetURL(*dicp);
+  if (!url)
+    return Qnil;
+  return cfstr2rb(CFURLGetString(url));
 }
 
 VALUE dic_base_url(VALUE self) {
   DCSDictionaryRef *dicp;
   TypedData_Get_Struct(self, DCSDictionaryRef, &dic_type, dicp);
-  CFURLRef pl = DCSDictionaryGetBaseURL(*dicp);
-  return cfstr2rb(CFURLGetString(pl));
+  CFURLRef url = DCSDictionaryGetBaseURL(*dicp);
+  if (!url)
+    return Qnil;
+  return cfstr2rb(CFURLGetString(url));
 }
 
 VALUE dic_stylesheet_url(VALUE self) {
   DCSDictionaryRef *dicp;
   TypedData_Get_Struct(self, DCSDictionaryRef, &dic_type, dicp);
-  CFURLRef pl = DCSDictionaryGetStyleSheetURL(*dicp);
-  return cfstr2rb(CFURLGetString(pl));
+  CFURLRef url = DCSDictionaryGetStyleSheetURL(*dicp);
+  if (!url)
+    return Qnil;
+  return cfstr2rb(CFURLGetString(url));
 }
 
 VALUE dic_asset_obj(VALUE self) {
   DCSDictionaryRef *dicp;
   TypedData_Get_Struct(self, DCSDictionaryRef, &dic_type, dicp);
-  CFTypeRef pl = DCSDictionaryGetAssetObj(*dicp);
-  return cftype2rb(pl);
+  CFTypeRef v = DCSDictionaryGetAssetObj(*dicp);
+  return cftype2rb(v);
 }
 
 VALUE dic_languages(VALUE self) {
   DCSDictionaryRef *dicp;
   TypedData_Get_Struct(self, DCSDictionaryRef, &dic_type, dicp);
-  CFTypeRef pl = DCSDictionaryGetLanguages(*dicp);
-  return cftype2rb(pl);
+  CFTypeRef v = DCSDictionaryGetLanguages(*dicp);
+  return cftype2rb(v);
 }
 
 VALUE dic_parent_dictionary(VALUE self) {
   DCSDictionaryRef *dicp;
   TypedData_Get_Struct(self, DCSDictionaryRef, &dic_type, dicp);
-  CFTypeRef pl = DCSDictionaryGetParentDictionary(*dicp);
-  return cftype2rb(pl);
+  CFTypeRef v = DCSDictionaryGetParentDictionary(*dicp);
+  return cftype2rb(v);
 }
 
 VALUE dic_preference(VALUE self) {
   DCSDictionaryRef *dicp;
   TypedData_Get_Struct(self, DCSDictionaryRef, &dic_type, dicp);
-  CFTypeRef pl = DCSDictionaryGetPreference(*dicp);
-  return cftype2rb(pl);
+  CFTypeRef v = DCSDictionaryGetPreference(*dicp);
+  return cftype2rb(v);
 }
 
 VALUE dic_preference_html(VALUE self) {
   DCSDictionaryRef *dicp;
   TypedData_Get_Struct(self, DCSDictionaryRef, &dic_type, dicp);
-  CFTypeRef pl = DCSDictionaryGetPreferenceHTML(*dicp);
-  return cftype2rb(pl);
+  CFTypeRef v = DCSDictionaryGetPreferenceHTML(*dicp);
+  return cftype2rb(v);
 }
 
 VALUE dic_sub_dictionaries(VALUE self) {
   DCSDictionaryRef *dicp;
   TypedData_Get_Struct(self, DCSDictionaryRef, &dic_type, dicp);
-  CFTypeRef pl = DCSDictionaryGetSubDictionaries(*dicp);
-  return cftype2rb(pl);
+  CFTypeRef v = DCSDictionaryGetSubDictionaries(*dicp);
+  return cftype2rb(v);
 }
 
 VALUE dic_text_definition(VALUE self, VALUE text) {
@@ -145,8 +171,8 @@ VALUE dic_text_definition(VALUE self, VALUE text) {
 }
 
 void Init_binding() {
-  VALUE m_dcs = rb_define_module("DictionaryServices");
-  VALUE c_dic = rb_define_class_under(m_dcs, "DCSDictionary", rb_cData);
+  m_dcs = rb_define_module("DictionaryServices");
+  c_dic = rb_define_class_under(m_dcs, "DCSDictionary", rb_cData);
   rb_define_alloc_func(c_dic, dic_alloc);
   rb_define_method(c_dic, "initialize", dic_init, 0);
   rb_define_method(c_dic, "name", dic_name, 0);
@@ -165,4 +191,6 @@ void Init_binding() {
   rb_define_method(c_dic, "text_definition", dic_text_definition, 1);
   rb_define_module_function(m_dcs, "getActiveDictionaries",
                             r_getActiveDictionaries, 0);
+  rb_define_module_function(m_dcs, "copyAvailableDictionaries",
+                            r_copyAvailableDictionaries, 0);
 }

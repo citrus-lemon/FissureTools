@@ -1,5 +1,10 @@
 #include "type.h"
 
+#ifdef CFTYPE_MAP_DCS_DICTIONARY
+CFTypeID DCSDictionaryGetTypeID();
+VALUE dic_from_ref(DCSDictionaryRef ref);
+#endif
+
 VALUE cftype2rb(CFTypeRef obj) {
   if (!obj)
     return Qnil;
@@ -16,7 +21,13 @@ VALUE cftype2rb(CFTypeRef obj) {
     return Qnil;
   } else if (tid == CFBooleanGetTypeID()) {
     return cfbool2rb(obj);
-  } else {
+  }
+#ifdef CFTYPE_MAP_DCS_DICTIONARY
+  else if (tid == DCSDictionaryGetTypeID()) {
+    return dic_from_ref(obj);
+  }
+#endif
+  else {
 #ifndef CFTYPE_TO_STRING
     return rb_to_symbol(cfstr2rb(CFCopyTypeIDDescription(CFGetTypeID(obj))));
 #else
@@ -33,7 +44,6 @@ VALUE cfstr2rb(CFStringRef acfstr) {
       CFStringGetMaximumSizeForEncoding(length, kCFStringEncodingUTF8) + 1;
   char str[maxSize];
   if (CFStringGetCString(acfstr, str, maxSize, kCFStringEncodingUTF8)) {
-    // CFRelease(acfstr);
     return rb_utf8_str_new_cstr(str);
   } else {
     return Qnil;
@@ -47,7 +57,6 @@ VALUE cfdic2rb(CFDictionaryRef acfdic) {
   CFTypeRef keys[length], values[length];
   CFDictionaryGetKeysAndValues(acfdic, keys, values);
   VALUE hash = rb_hash_new();
-  // CFRelease(acfdic);
   for (CFIndex i = 0; i < length; i++) {
     rb_hash_aset(hash, cftype2rb(keys[i]), cftype2rb(values[i]));
   }
