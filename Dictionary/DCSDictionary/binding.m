@@ -214,12 +214,46 @@ VALUE dic_definition_records(VALUE self, VALUE text) {
   return rbarr;
 }
 
-VALUE dic_search(VALUE self, VALUE text) {
+/**
+ * @function records_for_search_string
+ * binding for DCSCopyRecordsForSearchString
+ *
+ * Reference from Dictionary.app `0x000000010000d631`
+ *
+ * - [DictionaryObj searchString:byMethod:maxRecord:]
+ *
+ * @note search mode constant is different from Dictionary.app
+ *
+ * @param self ruby context
+ * @param text string for search
+ * @param mode search mode in
+ *  : DCSDictionary::WildcardMatch = 3
+ *  : DCSDictionary::PrefixMatch = 7
+ *  : DCSDictionary::SuffixMatch = 11
+ *  : DCSDictionary::CommonMatch = 15
+ *  : DCSDictionary::ExactMatch = 0
+ * @param max_records max number of returned records
+ * @return list of DCSRecord
+ */
+VALUE dic_records_for_search_string(VALUE self, VALUE text, VALUE mode,
+                                    VALUE max_records) {
+  Check_Type(mode, T_FIXNUM);
+  Check_Type(max_records, T_FIXNUM);
+  int m = FIX2INT(mode);
+  if (m & 0x3) {
+    if (m & 0x4) {
+      text = rb_str_cat2(text, "*");
+    }
+    if (m & 0x8) {
+      text = rb_str_concat(rb_str_new_cstr("*"), text);
+    }
+    m = 0x3;
+  }
   DCSDictionaryRef *dicp;
   TypedData_Get_Struct(self, DCSDictionaryRef, &dic_type, dicp);
   NSString *word = [NSString stringWithUTF8String:StringValueCStr(text)];
   CFArrayRef v = DCSCopyRecordsForSearchString(
-      *dicp, (__bridge CFStringRef)word, CFRangeMake(0, word.length));
+      *dicp, (__bridge CFStringRef)word, m, FIX2INT(max_records));
 
   VALUE rbarr = rb_ary_new();
   if (!v)
@@ -387,6 +421,12 @@ VALUE rec_title(VALUE self) {
   return cftype2rb(v);
 }
 
+VALUE rec_inspect(VALUE self) {
+  VALUE sn = rb_funcall(self, rb_intern("string"), 0);
+  return rb_str_cat2(rb_str_concat(rb_str_new_cstr("#<DCSRecordRef["), sn),
+                     "]>");
+}
+
 void Init_binding() {
   m_dcs = rb_define_module("DictionaryServices");
   c_dic = rb_define_class_under(m_dcs, "DCSDictionary", rb_cData);
@@ -408,7 +448,13 @@ void Init_binding() {
   rb_define_method(c_dic, "text_definition", dic_text_definition, 1);
   rb_define_method(c_dic, "definitions", dic_definitions, 1);
   rb_define_method(c_dic, "definition_records", dic_definition_records, 1);
-  rb_define_method(c_dic, "search", dic_search, 1);
+  rb_define_const(c_dic, "WildcardMatch", INT2FIX(3));
+  rb_define_const(c_dic, "PrefixMatch", INT2FIX(7));
+  rb_define_const(c_dic, "SuffixMatch", INT2FIX(11));
+  rb_define_const(c_dic, "CommonMatch", INT2FIX(15));
+  rb_define_const(c_dic, "ExactMatch", INT2FIX(0));
+  rb_define_method(c_dic, "records_for_search_string",
+                   dic_records_for_search_string, 3);
   rb_define_method(c_dic, "inspect", dic_inspect, 0);
   rb_define_method(c_dic, "==", dic_equal, 1);
 
@@ -430,6 +476,7 @@ void Init_binding() {
   rb_define_method(c_rec, "supplemental_headword", rec_supplemental_headword,
                    0);
   rb_define_method(c_rec, "title", rec_title, 0);
+  rb_define_method(c_rec, "inspect", rec_inspect, 0);
 
   rb_define_module_function(m_dcs, "getActiveDictionaries",
                             r_getActiveDictionaries, 0);

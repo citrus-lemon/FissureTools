@@ -23,8 +23,8 @@ CFTypeID DCSDictionaryGetTypeID(void);
 CFURLRef DCSDictionaryGetURL(DCSDictionaryRef);
 CFArrayRef DCSCopyDefinitions(DCSDictionaryRef, CFStringRef, CFRange);
 CFArrayRef DCSCopyDefinitionRecords(DCSDictionaryRef, CFStringRef, CFRange);
-CFArrayRef DCSCopyRecordsForSearchString(DCSDictionaryRef, CFStringRef,
-                                         CFRange);
+CFArrayRef DCSCopyRecordsForSearchString(DCSDictionaryRef, CFStringRef, int,
+                                         int);
 CFStringRef DCSRecordCopyData(DCSRecordRef);
 CFURLRef DCSRecordCopyDataURL(DCSRecordRef);
 CFStringRef DCSRecordCopyDefinition(DCSRecordRef);
