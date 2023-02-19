@@ -1,3 +1,6 @@
-# Tools Collection of Fissure Project
+# Fissure: Ruby binding for macOS utility
 
-This is a part of Project Fissure
+## TODO
+
+- make rubygems
+- add memory management for objc
